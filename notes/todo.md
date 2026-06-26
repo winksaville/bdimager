@@ -63,7 +63,13 @@ Ladder:
     syntax + collision rules + rootless note), ARCHITECTURE
     module map.
   - Add the installable-packages todo (tier-two).
-- 0.3.0 close-out (title TBD — bookkeeping)
+- 0.3.0-5 chore: add justfile (done)
+  - `just` recipes wrapping the apps (build / capture / write),
+    `test` (pytest), `mk-test-image`, and the rootless
+    image-test / capture-test / write-test smokes over the
+    installed `bd-*` console scripts.
+  - README pointer to `just --list`.
+- 0.3.0 close-out: chore: close out 0.3.0 image-builder port
   - Full validation (all three self-tests; console scripts
     install + run).
   - Bookkeeping: move this block → chores-01 + an As-built

@@ -33,6 +33,10 @@ env var < CLI flag. Every command takes `--dry-run` to resolve and
 print the plan without touching anything, and `--config` to point
 at another file.
 
+A `justfile` wraps the commands — run `just --list`. For example
+`just build --dry-run`, `just test` (the suite), or the rootless
+end-to-end smokes `just image-test` / `capture-test` / `write-test`.
+
 ### bd-capture (device → mother)
 
 A non-destructive read; needs `sudo` for the real `dd`.
