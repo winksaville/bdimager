@@ -54,7 +54,7 @@ Ladder:
   - Add `--add` / `@file` `src:dest` / `src->dest` injection
     with the collision rules above.
   - Validate: `image-test` self-test green, plus an inject case.
-- 0.3.0-3 feat: capture + write device apps
+- 0.3.0-3 feat: capture + write device apps (done)
   - Port `capture` + `write` de-fc'd, `--test-mode` preserved,
     `BD_*` config.
   - Validate: `capture-test` + `write-test` self-tests green.
