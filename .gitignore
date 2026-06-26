@@ -3,3 +3,11 @@
 /.git
 /.jj
 /.vc-x1
+
+# Python / uv
+/.venv
+__pycache__/
+*.py[cod]
+/dist
+/build
+/images

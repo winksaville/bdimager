@@ -1,0 +1,30 @@
+[project]
+name = "bdimager"
+dynamic = ["version"]
+description = "Rootless block-device imager — capture a working block device to a mother image, build a distributable image, and write it to a (possibly larger) target."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+bd-capture = "bdimager.capture:main"
+bd-build = "bdimager.build:main"
+bd-write = "bdimager.write:main"
+
+[dependency-groups]
+dev = ["pytest"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Single source of truth for the version: bd-config.toml's
+# [project].version (the runtime version-of-record the apps read).
+# The wheel/sdist version is sourced from there so the two never
+# drift — bump bd-config.toml only.
+[tool.hatch.version]
+path = "bd-config.toml"
+pattern = 'version = "(?P<version>[^"]+)"'
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bdimager"]

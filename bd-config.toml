@@ -1,0 +1,10 @@
+# bdimager configuration — the version-of-record plus (added in
+# later cycle steps) default settings for the capture / build /
+# write apps.
+#
+# [project].version is the single source of truth for the version:
+# read at build time by pyproject.toml's hatchling hook and at
+# runtime by the apps. The cycle's `X.Y.Z-N` version is stored in
+# PEP 440 form, mapping the `-` to `+` (`0.3.0-0` -> `0.3.0+0`).
+[project]
+version = "0.3.0+0"

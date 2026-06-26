@@ -6,13 +6,71 @@ uses links or reference links for more details.
 
 ## In Progress
 
-When a `## Todo` item is picked up, its text moves here: the
-problem overview and its list of things to do. That is followed
-by the "plan" — a bulleted list of the development "ladder":
-   - 0.xx.y-0 blah (done)
-   - 0.xx.y-1 blah blah (current)
-   - 0.xx.y-2 blah blah blah
-   - 0.xx.y close-out and validation
+**Port fc's image builder into bdimager (generalized)**
+
+bdimager is an empty scaffold. fc has a working rootless SD-card
+image builder (capture → build → write, ~2,000 lines across 7
+modules) that maps onto bdimager's purpose. Port it in as a
+proper installable Python package, stripped of all fc-isms,
+replacing fc's app-baking with a generic file/dir injection
+feature.
+
+Decisions:
+
+- Generalize, no fc-isms: `bd-config.toml`, `BD_*` env prefix,
+  `bd-capture` / `bd-build` / `bd-write` console scripts.
+- Proper installable package: `src/bdimager/` + `pyproject.toml`.
+- `build` injection: explicit `src`→`dest`, accepting **both**
+  `:` and `->` (mutual collision escape hatch); an entry
+  ambiguous in *both* separators is a hard error;
+  dest-already-exists → overwrite, surfaced in `--dry-run`;
+  supplied via `--add` on the CLI or via a `@file` (argparse
+  fromfile).
+- Scope KISS: file/dir copy only, on fc's rootless
+  `debugfs` / `mtools` path (no mount). Real package
+  installation is deferred to a todo (tier-two: needs
+  mount + chroot + qemu-user, not the rootless debugfs path).
+
+Ladder:
+
+- 0.3.0-0 chore: scaffold package + open cycle (done)
+  - `pyproject.toml` (version-of-record `0.3.0+0`, PEP 440
+    `-`→`+`; hatchling; the three console scripts),
+    `src/bdimager/` skeleton, uv / `.python-version`.
+  - Move this item into `## In Progress`; open the chores-01
+    section (empty `Commits:`).
+- 0.3.0-1 feat: rootless storage + config core
+  - Port `imglib`, `imgcfg`, `devsafe`, `mk_test_image` into the
+    package, de-fc'd.
+  - `bd-config.toml` schema: drop fc build keys (`fc_path`,
+    `fc_config_target`, `autologin_tty`, `scrub_*`), keep the
+    generic `image` / `capture` / `write` / `build` keys, add
+    the inject key; `BD_*` env.
+  - Validate: `debugfs` / `mtools` round-trip smoke via
+    `mk_test_image`.
+- 0.3.0-2 feat: build app + generic file/dir injection
+  - Port `build` (keep shrink / compress / finalize on the
+    rootless path), remove the baking / scrub logic.
+  - Add `--add` / `@file` `src:dest` / `src->dest` injection
+    with the collision rules above.
+  - Validate: `image-test` self-test green, plus an inject case.
+- 0.3.0-3 feat: capture + write device apps
+  - Port `capture` + `write` de-fc'd, `--test-mode` preserved,
+    `BD_*` config.
+  - Validate: `capture-test` + `write-test` self-tests green.
+- 0.3.0-4 docs: README + ARCHITECTURE + deferred todo
+  - README per-subcommand usage (incl. the `--add` / `@file`
+    syntax + collision rules + rootless note), ARCHITECTURE
+    module map.
+  - Add the installable-packages todo (tier-two).
+- 0.3.0 close-out (title TBD — bookkeeping)
+  - Full validation (all three self-tests; console scripts
+    install + run).
+  - Bookkeeping: move this block → chores-01 + an As-built
+    ladder, `## Done` entry, ref prune, update
+    `notes/README.md` if needed.
+  - Decide push shape (squash / merge non-ff / keep) at push
+    time.
 
 ## Todo
 
@@ -28,12 +86,7 @@ by the "plan" — a bulleted list of the development "ladder":
  detail goes in `notes/chores/chores-NN.md` design
  subsections (link via `[N]` ref).
 
-Rough Initial Plan:
-
-1. Copy the image builder code from nps-gnc-flightcampaign at ../fc
-2. Test the components
-3. Write documentation
-4. Close out the 0.3.0
+_No queued items — the image-builder port is in `## In Progress`._
 
 ## Done
 
