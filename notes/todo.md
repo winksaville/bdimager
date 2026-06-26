@@ -48,7 +48,7 @@ Ladder:
     the inject key; `BD_*` env.
   - Validate: `debugfs` / `mtools` round-trip smoke via
     `mk_test_image`.
-- 0.3.0-2 feat: build app + generic file/dir injection
+- 0.3.0-2 feat: build app + generic file/dir injection (done)
   - Port `build` (keep shrink / compress / finalize on the
     rootless path), remove the baking / scrub logic.
   - Add `--add` / `@file` `src:dest` / `src->dest` injection

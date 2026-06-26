@@ -7,7 +7,7 @@
 # runtime by the apps. The cycle's `X.Y.Z-N` version is stored in
 # PEP 440 form, mapping the `-` to `+` (`0.3.0-0` -> `0.3.0+0`).
 [project]
-version = "0.3.0+1"
+version = "0.3.0+2"
 
 # ---------------------------------------------------------------------------
 # Block-device image builder — three apps share this config:
