@@ -58,7 +58,7 @@ Ladder:
   - Port `capture` + `write` de-fc'd, `--test-mode` preserved,
     `BD_*` config.
   - Validate: `capture-test` + `write-test` self-tests green.
-- 0.3.0-4 docs: README + ARCHITECTURE + deferred todo
+- 0.3.0-4 docs: README + ARCHITECTURE + deferred todo (done)
   - README per-subcommand usage (incl. the `--add` / `@file`
     syntax + collision rules + rootless note), ARCHITECTURE
     module map.
@@ -86,7 +86,17 @@ Ladder:
  detail goes in `notes/chores/chores-NN.md` design
  subsections (link via `[N]` ref).
 
-_No queued items — the image-builder port is in `## In Progress`._
+1. **Handle installable packages in build inject.** Today `bd-build
+   --add` only file-copies into the rootfs (the rootless `debugfs`
+   path). A second tier would recognize an installable package
+   (`.deb` / Alpine `apk` / Python wheel) and install it *properly*
+   (dependencies, post-install hooks) instead of copying files.
+   - This needs loop-mount + `chroot` + `qemu-user` / `binfmt_misc`
+     (and root) to run the distro's installer in a foreign-arch
+     rootfs — out of scope for the rootless KISS path, so it is its
+     own cycle.
+   - The `--add` fallback (user supplies the explicit destination)
+     stays the path for anything not recognized.
 
 ## Done
 

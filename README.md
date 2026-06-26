@@ -1,14 +1,85 @@
 # bdimager
 
-When complete this Python tool will allow you to take a working
-image from a block device, typically an sd-card, and
-- Capture the contents to a file *mother* image
-- Build this into a distributable(?) image
-- Write the distributable image to a target block device
-  and this target device can be a different size than
-  the *mother* image.
+A Python tool to image block devices (typically SD cards) through
+three commands:
+
+- `bd-capture` — copy a source block device to a file *mother* image.
+- `bd-build` — turn the mother into a distributable image: inject
+  caller-specified files/directories, then shrink the rootfs and xz
+  it.
+- `bd-write` — write the distributable image to a target block
+  device, growing the rootfs to fill a target larger than the image.
+
+The image-editing path is **rootless**: `bd-build` edits the
+filesystems *inside* the `.img` (`debugfs` for ext, `mtools` for
+FAT) rather than loop-mounting, so no `sudo` is needed. Only the
+physical-device `dd` of capture/write needs root.
 
 Eventually I'd like to convert this to Rust.
+
+## Requirements
+
+- Python ≥ 3.14 and [`uv`](https://docs.astral.sh/uv/).
+- System tools on `PATH`: `sfdisk` / `lsblk` (util-linux),
+  `debugfs` / `mke2fs` / `resize2fs` / `dumpe2fs` / `e2fsck`
+  (e2fsprogs), `mformat` / `mcopy` / `mdir` (mtools), and `xz`.
+
+## Usage
+
+Settings come from a `bd-config.toml` in the current directory
+(`[image]` shared paths plus `[build]` / `[capture]` / `[write]`
+knobs). Precedence is lowest to highest: config file < `BD_<KEY>`
+env var < CLI flag. Every command takes `--dry-run` to resolve and
+print the plan without touching anything, and `--config` to point
+at another file.
+
+### bd-capture (device → mother)
+
+A non-destructive read; needs `sudo` for the real `dd`.
+
+```
+bd-capture --list-devices                  # pick a source (shows by-id)
+bd-capture --source /dev/sdb               # capture into the mother
+bd-capture --test-mode --source card.img --mother mother.img  # rootless
+```
+
+### bd-build (mother → deployable image)
+
+Fully rootless. Injection places host files/directories into the
+image rootfs:
+
+- `--add SRC:DEST` or `--add SRC->DEST` — copy host `SRC` (a file
+  or a directory tree) to absolute image path `DEST`. Repeatable.
+- the separator is `:` or `->`; per entry pick whichever your
+  paths don't contain — e.g. use `->` when the destination has a
+  colon (`'./a->/etc/wei:rd'`). `DEST` must be absolute; an entry
+  that parses validly under *both* separators is a hard error.
+- an existing `DEST` is overwritten (its mode/uid/gid preserved);
+  overwrites are listed in the plan.
+- the same arguments may live in a `@file` — one `--add SRC:DEST`
+  per line, `#` comments allowed — passed as `bd-build @adds.txt`.
+
+```
+bd-build --mother mother.img --output deploy.img \
+    --add ./app.conf:/etc/app.conf --add ./assets:/opt/app/assets
+bd-build --no-shrink --no-compress         # skip the finalize steps
+```
+
+### bd-write (image → device)
+
+Destructive, so it runs the full safety gate: two-key targeting
+(`--target` plus the `--target-byid` `/dev/disk/by-id` handle, which
+must resolve to the same device), refusal of any disk backing a
+mounted filesystem, and an interactive confirm. The confirm is
+skippable only with both `[write].allow_yes = true` and `--yes`.
+After writing, the rootfs is grown to fill the target unless
+`--no-expand`.
+
+```
+bd-write --list-devices
+bd-write --target /dev/sdb --target-byid /dev/disk/by-id/usb-...
+bd-write --test-mode --output deploy.img --target card.img  # rootless
+```
 
 ## Repo
 
