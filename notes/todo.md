@@ -39,7 +39,7 @@ Ladder:
     `src/bdimager/` skeleton, uv / `.python-version`.
   - Move this item into `## In Progress`; open the chores-01
     section (empty `Commits:`).
-- 0.3.0-1 feat: rootless storage + config core
+- 0.3.0-1 feat: rootless storage + config core (done)
   - Port `imglib`, `imgcfg`, `devsafe`, `mk_test_image` into the
     package, de-fc'd.
   - `bd-config.toml` schema: drop fc build keys (`fc_path`,

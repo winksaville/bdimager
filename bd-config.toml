@@ -7,4 +7,82 @@
 # runtime by the apps. The cycle's `X.Y.Z-N` version is stored in
 # PEP 440 form, mapping the `-` to `+` (`0.3.0-0` -> `0.3.0+0`).
 [project]
-version = "0.3.0+0"
+version = "0.3.0+1"
+
+# ---------------------------------------------------------------------------
+# Block-device image builder — three apps share this config:
+#   bd-build   — rootless inject + finalize (shrink / compress)
+#   bd-capture — read a source device into the mother image
+#   bd-write   — write the deployable image to a target device
+#
+# Every key is the default for the matching CLI flag — identical names
+# (TOML `snake_case` <-> CLI `--snake-case`). Precedence, lowest to
+# highest: this file < BD_* env var < CLI flag. The file's default
+# location is the current working directory; `--config` overrides it.
+#
+# Tables: [image] holds the handoff artifacts every app shares; [build] /
+# [capture] / [write] hold each app's own knobs. Each app reads [image]
+# plus its own table and errors on an unknown key in either.
+# ---------------------------------------------------------------------------
+
+# Shared handoff artifacts: capture writes `mother`, build reads it and
+# writes `output`, write reads that.
+[image]
+
+# Local directory holding the `.img` files. A bare-filename `mother` /
+# `output` sits under it; a value with a path is used as-is.
+images_dir = "images"
+
+# Mother image: the source `.img` build transforms into a deployable
+# image. capture writes the captured device here.
+mother = "mother.img"
+
+# Output: the deployable `.img` build writes. Left as the bare image
+# unless `compress` xz-packs it to `<output>.xz`.
+output = "deploy.img"
+
+
+# build app: the rootless inject + finalize pipeline. File/dir injection
+# is supplied per-run via `--add <src>:<dest>` (or `@file`), not here.
+[build]
+
+# Finalize: shrink the root partition to its used size, then xz-compress
+# the output image.
+shrink = true
+compress = true
+
+
+# capture app: dd a physical device into `mother`.
+[capture]
+
+# Source block device to capture — an SD card, USB stick, NVMe, or disk
+# — named as `/dev/xx` or a `/dev/disk/by-id/yy` handle. Empty = no
+# capture (build uses the existing mother). Capture is a read, so no
+# two-key / confirm — that safety guards the destructive write, not this.
+source = ""
+
+
+# write app: dd `output` to a target device. Destructive — writes a
+# physical device, behind the full devsafe gate.
+[write]
+
+# Target device to write, as `/dev/xx`. Empty = no write. Destructive,
+# so write requires two-key targeting (this plus `target_byid`) + a confirm.
+target = ""
+
+# Second targeting key: the `/dev/disk/by-id/yy` handle for the same
+# device. write aborts unless `target` and `target_byid` resolve to the
+# same major:minor, so a stale `/dev/sdX` can't slip a wrong-device write.
+target_byid = ""
+
+# After writing, grow the root partition + filesystem to fill the target
+# device (the shrunk image leaves the rest of the card unused). Off with
+# `--no-expand` to leave the image at its written size.
+expand = true
+
+# Permit the --yes flag to skip the interactive confirm before a
+# destructive write. Two-factor by design: skipping needs BOTH this (the
+# persistent permission) AND --yes on the command line (the per-run
+# intent); --yes without this is a hard error. There is deliberately no
+# --allow-yes flag — the permission can only be granted here.
+allow_yes = false
